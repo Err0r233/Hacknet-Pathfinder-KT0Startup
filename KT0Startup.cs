@@ -17,7 +17,7 @@ public class KT0Startup : HacknetPlugin
 {
     public const string ModGUID = "com.KT0.KT0Mods";
     public const string ModName = "KT0_Toolkit";
-    public const string ModVer = "1.0.5";
+    public const string ModVer = "1.1.0";
 
     public override bool Load()
     {
@@ -45,11 +45,14 @@ public class KT0Startup : HacknetPlugin
         
         // Patches
         WriteLine("[+] Patching...", ConsoleColor.Green);
+        HarmonyInstance.PatchAll(typeof(KT0Startup).Assembly);
         WriteSeperator(ConsoleColor.Magenta);
+        
         
         // Register Commands Below
         WriteLine("[+] Adding Commands...", ConsoleColor.Green);
         CommandManager.RegisterCommand("base64", Base64Encode.Trigger);
+        CommandManager.RegisterCommand("SZip", SZipTest.Trigger);
         WriteSeperator(ConsoleColor.Magenta);
         
         // Register Ports Below

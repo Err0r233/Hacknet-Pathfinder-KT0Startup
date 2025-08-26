@@ -17,6 +17,7 @@ namespace KT0Mods.Utils
         {
             return b1 + ((a3 - a1) * (b1 - b2) / (a1 - a2));
         }
+        
     }
 }
 
