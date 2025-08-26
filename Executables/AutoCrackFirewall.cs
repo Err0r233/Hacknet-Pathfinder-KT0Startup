@@ -8,14 +8,14 @@ using Pathfinder.Executable;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace AutoCreakFirewall;
+namespace AutoCrackFirewall;
 
 /**
- * Author: @April_Crystal
+ * Animation by: @April_Crystal
  * KT0StartupMod FirewallAnalyzer
  */
 
-public class AutoCreakFirewallExe : BaseExecutable
+public class AutoCrackFirewallExe : BaseExecutable
 {
     private bool complete = false;
     private float elapsedTime = 0f;
@@ -46,10 +46,10 @@ public class AutoCreakFirewallExe : BaseExecutable
         public float spawnTime;     // 生成时间
     }
 
-    public AutoCreakFirewallExe(Rectangle location, OS operatingSystem, string[] args)
+    public AutoCrackFirewallExe(Rectangle location, OS operatingSystem, string[] args)
         : base(location, operatingSystem, args)
     {
-        name = "AutoCreakFirewall";
+        name = "AutoCrackFirewall";
         ramCost = 100;
         IdentifierName = "Firewall Cracker";
     }

@@ -1,4 +1,4 @@
-﻿using AutoCreakFirewall;
+﻿using AutoCrackFirewall;
 using BepInEx;
 using BepInEx.Hacknet;
 using HacknetPluginTemplate.Executables;
@@ -68,7 +68,7 @@ public class KT0Startup : HacknetPlugin
         WriteLine("[+] Adding Executables...", ConsoleColor.Green);
         ExecutableManager.RegisterExecutable<PwntoolsExe>("#PWN_EXE#");
         ExecutableManager.RegisterExecutable<Java>("#JAVA_EXE#");
-        ExecutableManager.RegisterExecutable<AutoCreakFirewallExe>("#FIREWALL_AUTO_SOLVER#"); // Try use this to solve Unbreakable Firewall!
+        ExecutableManager.RegisterExecutable<AutoCrackFirewallExe>("#FIREWALL_AUTO_SOLVER#"); // Try use this to solve Unbreakable Firewall!
         ExecutableManager.RegisterExecutable<EternalBlue>("#ETERNALBLUE#");
         ExecutableManager.RegisterExecutable<RedisSploitExe>("#REDIS_EXE#");
         
