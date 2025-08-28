@@ -7,14 +7,21 @@ using KT0Mods.Utils;
 
 namespace KT0Mods.Patches
 {   
-    
-    // <SZipFile OutputFolder="bin" ParentFolder="bin" Name="Name.szip" Key="EncryptKey/Default">
+    // format 1
+    // <SZipFileFolder OutputFolder="bin" ParentFolder="bin" Name="Name.szip" Key="EncryptKey/Default">
     // <SZip OutputFileName="xxx" Subfolder="1" Data="fileData"></SZip>
     // <SZip OutputFileName="yyy" Subfolder="1" Data="fileData"></SZip>
     // <SZip OutputFileName="zzz" Subfolder="1//2" Data="fileData"></SZip>
-    // </SZipFile>
-    
+    // </SZipFileFolder>
     // 解释：subfolder默认为Folder下的子目录
+    // 用于生成文件夹以及多个子文件夹、子文件
+    
+    
+    // format 2
+    // <SZipFile OutputFolder="bin" Name="xxx.szip" Key="EncryptKey/Default">
+    // <SZip OutputFileName="xxx" Data="fileData"></SZip>
+    // </SZipFile>
+    // 解释：用于生成单个或者多个文件
     [HarmonyPatch]
     public class SZipPatch
     {
@@ -27,7 +34,7 @@ namespace KT0Mods.Patches
             XmlReader xml = XmlReader.Create(fileStream);
             while(!xml.EOF)
             {
-                if (xml.Name == "SZipFile")
+                if (xml.Name == "SZipFileFolder")
                 {
                     xml.MoveToAttribute("OutputFolder");
                     string outputFolder = xml.ReadContentAsString();
@@ -59,10 +66,39 @@ namespace KT0Mods.Patches
                     // DEBUG
 
                     string origStr = SZipUtils.GenerateOutputString(entries, parentFolder);
-                    Console.WriteLine("-----------------------------------------------------");
-                    Console.WriteLine($"subFolder: {origStr}");
-                    Console.WriteLine("-----------------------------------------------------");
 
+                    string encStr = EncryptUtils.EncryptMain(origStr, key);
+                    
+                    Folder targetFolder1 = c.getFolderFromPath(outputFolder, true);
+                    
+                    if(targetFolder1.searchForFile(encFileName) != null)
+                    {
+                        targetFolder1.searchForFile(encFileName).data = encStr;
+                    } else
+                    {
+                        targetFolder1.files.Add(new FileEntry(encStr, encFileName));
+                    }
+
+                }
+
+                if (xml.Name == "SZipFile")
+                {
+                    xml.MoveToAttribute("OutputFolder");
+                    string outputFolder = xml.ReadContentAsString();
+                    xml.MoveToAttribute("Name");
+                    string encFileName = xml.ReadContentAsString();
+
+                    xml.MoveToAttribute("Key");
+                    string key = xml.ReadContentAsString();
+                    if (key == "Default")
+                    {
+                        key = "default_32byte_key_1234567890abc!";
+                    }
+
+                    string origStr = SZipUtils.GetSZipFileAttributes(xml);
+
+                    origStr = origStr.Substring(0, origStr.Length - 1);
+                    
                     string encStr = EncryptUtils.EncryptMain(origStr, key);
                     
                     Folder targetFolder1 = c.getFolderFromPath(outputFolder, true);
@@ -93,7 +129,6 @@ namespace KT0Mods.Patches
         // SZIP outputFileName//conent\n
         public string outputFileName;
         public string Data;
-        public string ret; // 返回的加密内容
         public string subFolder;
         public const string DELIM = "//";
         public List<SZipUtils> entries = new List<SZipUtils>();
@@ -108,6 +143,39 @@ namespace KT0Mods.Patches
         public SZipUtils()
         {
             
+        }
+
+        public static string GetSZipFileAttributes(XmlReader xml)
+        {
+            string ret = "";
+            while (!xml.EOF)
+            {
+                if (xml.Name == "SZip" && xml.IsStartElement())
+                {
+                    string o = "";
+                    string d = "";
+                    if (xml.MoveToAttribute("OutputFileName"))
+                    {
+                        o = xml.ReadContentAsString();
+                    }
+
+                    if (xml.MoveToAttribute("Data"))
+                    {
+                        d = xml.ReadContentAsString();
+                    }
+
+                    ret += o + DELIM + d + "\n";
+                }
+
+                if (xml.Name == "SZipFile" && !xml.IsStartElement())
+                {
+                    return ret;
+                }
+
+                xml.Read();
+            }
+
+            throw new XmlException("Unexpected EOF.");
         }
 
         public static SZipUtils GetSZipAttributes(XmlReader xml)
@@ -137,7 +205,7 @@ namespace KT0Mods.Patches
                     
                     entries.entries.Add(new SZipUtils(o,d,s));
                 }
-                if(xml.Name == "SZipFile" && !xml.IsStartElement())
+                if(xml.Name == "SZipFileFolder" && !xml.IsStartElement())
                 {
                     return entries;
                 }

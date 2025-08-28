@@ -60,7 +60,7 @@ public class RedisSploitExe : Pathfinder.Executable.BaseExecutable
     public RedisSploitExe(Rectangle location, OS operatingSystem, string[] args) : base(location, operatingSystem, args)
     {
         this.ramCost = 140; // 控制在150以内
-        this.IdentifierName = "ReditSploit";
+        this.IdentifierName = "Redis Exploit";
     }
 
     public override void LoadContent()
@@ -265,7 +265,7 @@ public class RedisSploitExe : Pathfinder.Executable.BaseExecutable
 
             // 绘制端口信息和进度文本
             Vector2 infoPos = new Vector2(ramRect.X + 5, ramRect.Y + ramRect.Height - 28);
-            string portText = $"REDIT-6379 : {(int)(progress * 100)}%";
+            string portText = $"REDIS-6379 : {(int)(progress * 100)}%";
             spriteBatch.DrawString(GuiData.UISmallfont, portText, infoPos, Color.Cyan);
 
             // 在进度条上方绘制密钥破解动画

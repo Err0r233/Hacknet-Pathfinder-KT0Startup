@@ -1,14 +1,25 @@
-﻿using AutoCrackFirewall;
+﻿using System.Xml.Linq;
+using AutoCrackFirewall;
 using BepInEx;
 using BepInEx.Hacknet;
+using Hacknet;
 using HacknetPluginTemplate.Executables;
+using KT0Mods.Daemons;
 using KT0Mods.KT0Cmd;
 using KT0Mods.KT0Exe;
+using KT0Mods.Patches;
 using Pathfinder.Command;
 using KT0Mods.Tags;
+using Pathfinder.Action;
+using Pathfinder.Daemon;
+using Pathfinder.Event;
+using Pathfinder.Event.Loading;
+using Pathfinder.Event.Saving;
 using Pathfinder.Executable;
 using Pathfinder.Port;
+using Pathfinder.Util.XML;
 using RedisSploit;
+using SZip;
 
 namespace KT0Mods;
 
@@ -17,7 +28,9 @@ public class KT0Startup : HacknetPlugin
 {
     public const string ModGUID = "com.KT0.KT0Mods";
     public const string ModName = "KT0_Toolkit";
-    public const string ModVer = "1.1.0";
+    public const string ModVer = "1.2.0";
+
+    public static Dictionary<string, InternalIpUtils> InteralPcDictionary = new Dictionary<string, InternalIpUtils>();
 
     public override bool Load()
     {
@@ -48,11 +61,15 @@ public class KT0Startup : HacknetPlugin
         HarmonyInstance.PatchAll(typeof(KT0Startup).Assembly);
         WriteSeperator(ConsoleColor.Magenta);
         
+        WriteLine("[+] Loading Daemons...", ConsoleColor.Green);
+        DaemonManager.RegisterDaemon<InternalServiceDaemon>();
+        WriteSeperator(ConsoleColor.Magenta);
         
         // Register Commands Below
         WriteLine("[+] Adding Commands...", ConsoleColor.Green);
         CommandManager.RegisterCommand("base64", Base64Encode.Trigger);
         CommandManager.RegisterCommand("SZip", SZipTest.Trigger);
+        CommandManager.RegisterCommand("IScan", IScan.Trigger);
         WriteSeperator(ConsoleColor.Magenta);
         
         // Register Ports Below
@@ -71,7 +88,16 @@ public class KT0Startup : HacknetPlugin
         ExecutableManager.RegisterExecutable<AutoCrackFirewallExe>("#FIREWALL_AUTO_SOLVER#"); // Try use this to solve Unbreakable Firewall!
         ExecutableManager.RegisterExecutable<EternalBlue>("#ETERNALBLUE#");
         ExecutableManager.RegisterExecutable<RedisSploitExe>("#REDIS_EXE#");
+        ExecutableManager.RegisterExecutable<Frp>("#FRP_EXE#");
+        WriteSeperator(ConsoleColor.Magenta);
         
+        WriteLine("[+] Adding Events...", ConsoleColor.Green);
+        Action<SaveComputerEvent> IlinkSaveDelegate = SaveIScan;
+        Action<SaveComputerLoadedEvent> IlinkLoadDelegate = LoadIScan;
+        
+        EventManager<SaveComputerEvent>.AddHandler(IlinkSaveDelegate);
+        EventManager<SaveComputerLoadedEvent>.AddHandler(IlinkLoadDelegate);
+        WriteSeperator(ConsoleColor.Magenta);
         
         WriteLine("[!] Done! Enjoy!", ConsoleColor.Green);
         
@@ -92,5 +118,53 @@ public class KT0Startup : HacknetPlugin
         Console.ForegroundColor = color;
         Console.WriteLine("------------------------------------");
         Console.ForegroundColor = originalColor; // 恢复原颜色
+    }
+
+    public void SaveIScan(SaveComputerEvent saveComp)
+    {
+        Computer c = saveComp.Comp;
+        Log.LogDebug($"Saving InternalIP data on node {c.idName}");
+        
+        XElement InternalLinkElement = new XElement("InternalLink");
+        
+        if (InteralPcDictionary.ContainsKey(c.idName))
+        {
+            InternalIpUtils e = InteralPcDictionary[c.idName];
+            XElement compElement = saveComp.Element;
+            foreach (var entry in e.entries)
+            {
+                XElement InternalPCElement = new XElement("InternalPC");
+                XAttribute iid = new XAttribute("id", entry.ComputerId);
+                XAttribute iip = new XAttribute("internalIp", entry.ip);
+                
+                InternalPCElement.Add(iid, iip);
+                InternalLinkElement.Add(InternalPCElement);
+            }
+            compElement.FirstNode.AddAfterSelf(InternalLinkElement);
+        }
+    }
+
+    public void LoadIScan(SaveComputerLoadedEvent saveComp)
+    {
+        Computer comp = saveComp.Comp;
+        ElementInfo xCompElement = saveComp.Info;
+
+        if (xCompElement.Children.FirstOrDefault(e => e.Name == "InternalLink") != null)
+        {
+            ElementInfo InternalLinkElement = xCompElement.Children.First(e => e.Name == "InternalLink");
+            InternalIpUtils entries = new InternalIpUtils();
+
+            for (var i = 0; i < InternalLinkElement.Children.Count; i++)
+            {
+                ElementInfo e = InternalLinkElement.Children[i];
+
+                string cpid = e.Attributes["id"];
+                string iip = e.Attributes["internalIp"];
+                InternalIpUtils internalIpUtils = new InternalIpUtils(iip, cpid);
+                entries.entries.Add(internalIpUtils);
+            }
+            
+            InteralPcDictionary.Add(comp.idName, entries);
+        }
     }
 }

@@ -30,6 +30,14 @@ namespace KT0Mods.KT0Cmd
             //SZip -c fileName or folderName [-p password] for Encrypt
             //Szip -d fileNmae or folderName [-p password] for Decrypt
             Computer c = os.connectedComp ?? os.thisComputer;
+
+            if (!os.Flags.HasFlag("SZipPermission"))
+            {
+                os.write("SZip is unavailable");
+                os.validCommand = false;
+                return;
+            }
+            
             if (!c.PlayerHasAdminPermissions())
             {
                 os.write("Permission Denied.");
