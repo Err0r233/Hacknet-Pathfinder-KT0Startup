@@ -142,9 +142,10 @@ public class Frp : BaseExecutable
             if (textPos.Y > ramRect.Y + ramRect.Height - 70) break;
         }
         
-        this.spriteBatch.Draw(Utils.white, base.GetContentAreaDest(), Color.Black * 0.5f);
-        TextItem.doFontLabelToSize(base.GetContentAreaDest(), " Tunnel Established. ", GuiData.titlefont, Color.Lerp(Utils.AddativeRed, this.os.brightLockedColor, 1f), false, false);
+        this.spriteBatch.Draw(Utils.white, GetContentAreaDest(), Color.Black * 0.5f);
+        //TextItem.doFontLabelToSize(GetContentAreaDest(), " Tunnel Established. ", GuiData.titlefont, Color.Lerp(Utils.AddativeRed, this.os.brightLockedColor, 1f), false, false);
         
+        KT0Mods.Utils.FlickeringTextEffect.DrawLinedFlickeringText(GetContentAreaDest(), " Tunnel Established. ", 3f, 0.1f, GuiData.titlefont, this.os, Utils.AddativeWhite, 2);
         
     }
     
