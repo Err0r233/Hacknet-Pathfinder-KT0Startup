@@ -6,15 +6,15 @@ A Hacknet pathfinder mod for KT0
 
 
 
-Current Version: 1.1.0
+Current Version: 1.2.0
 
 ## Inspiration
 
 
 
-`Zero Day toolkit `
+`Zero Day toolkit`
 
-`StuxnetHN `
+`StuxnetHN`
 
 `TempestGadgets`
 
