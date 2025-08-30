@@ -28,7 +28,7 @@ public class KT0Startup : HacknetPlugin
 {
     public const string ModGUID = "com.KT0.KT0Mods";
     public const string ModName = "KT0_Toolkit";
-    public const string ModVer = "1.2.0";
+    public const string ModVer = "1.2.1";
 
     public static Dictionary<string, InternalIpUtils> InteralPcDictionary = new Dictionary<string, InternalIpUtils>();
 
